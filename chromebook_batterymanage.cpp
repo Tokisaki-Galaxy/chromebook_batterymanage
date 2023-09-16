@@ -20,15 +20,21 @@ int battery_monitor() {
 
 int main()
 {
+    wchar_t buffer[MAX_PATH];
+    GetModuleFileName(NULL, buffer, MAX_PATH);
+    std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
+    std::wstring path = std::wstring(buffer).substr(0, pos);
+    auto pEc = path+L"\\ectool.exe";
 
     while (true) {
         auto start = high_resolution_clock::now();
 
         // 执行任务
         if (battery_monitor() >= 80)
-            ShellExecute(NULL, L"open", L"ectool.exe", L"chargecontrol idle", NULL, SW_HIDE);
+            ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol idle", NULL, SW_HIDE);
         else
-            ShellExecute(NULL, L"open", L"ectool.exe", L"chargecontrol normal", NULL, SW_HIDE);
+            ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol normal", NULL, SW_HIDE);
+        std::wcout<<pEc.c_str();
         std::cout << battery_monitor() << std::endl;
 
         std::this_thread::sleep_for(minutes(3));
