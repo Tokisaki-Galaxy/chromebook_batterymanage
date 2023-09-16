@@ -4,7 +4,7 @@
 #include <iostream>
 #include <Windows.h>
 #include <chrono>
-#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")//运行时不显示窗口
+//#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")//运行时不显示窗口
 
 using namespace std::chrono;
 
