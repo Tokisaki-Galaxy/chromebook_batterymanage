@@ -1,0 +1,306 @@
+Usage: Z:\GitHub\chromebook_batterymanage\ectool.exe [--dev=n] [--interface=dev|i2c|lpc] [--i2c_bus=n] [--device=vid:pid] [--name=cros_ec|cros_fp|cros_pd|cros_scp|cros_ish] [--ascii] <command> [params]
+
+  --i2c_bus=n  Specifies the number of an I2C bus to use. For
+               example, to use /dev/i2c-7, pass --i2c_bus=7.
+               Implies --interface=i2c.
+
+  --interface Specifies the interface.
+
+  --device    Specifies USB endpoint by vendor ID and product
+              ID (e.g. 18d1:5022).
+
+Commands:
+  adcread <channel>
+      Read an ADC channel.
+  addentropy [reset]
+      Add entropy to device secret
+  apreset
+      Issue AP reset
+  autofanctrl <on>
+      Turn on automatic fan speed control.
+  backlight <enabled>
+      Enable/disable LCD backlight
+  basestate [attach | detach | reset]
+      Manually force base state to attached, detached or reset.
+  battery
+      Prints battery info
+  batterycutoff [at-shutdown]
+      Cut off battery output power
+  batteryparam
+      Read or write board-specific battery parameter
+  boardversion
+      Prints the board version
+  button [vup|vdown|rec] <Delay-ms>
+      Simulates button press.
+  cbi
+      Get/Set/Remove Cros Board Info
+  chargecurrentlimit
+      Set the maximum battery charging current
+  chargecontrol
+      Force the battery to stop charging or discharge
+  chargeoverride
+      Overrides charge port selection logic
+  chargesplash
+      Show and manipulate chargesplash variables
+  chargestate
+      Handle commands related to charge state v2 (and later)
+  chipinfo
+      Prints chip info
+  cmdversions <cmd>
+      Prints supported version mask for a command number
+  console
+      Prints the last output to the EC debug console
+  cec
+      Read or write CEC messages and settings
+  echash [CMDS]
+      Various EC hash commands
+  eventclear <mask>
+      Clears EC host events flags where mask has bits set
+  eventclearb <mask>
+      Clears EC host events flags copy B where mask has bits set
+  eventget
+      Prints raw EC host event flags
+  eventgetb
+      Prints raw EC host event flags copy B
+  eventgetscimask
+      Prints SCI mask for EC host events
+  eventgetsmimask
+      Prints SMI mask for EC host events
+  eventgetwakemask
+      Prints wake mask for EC host events
+  eventsetscimask <mask>
+      Sets the SCI mask for EC host events
+  eventsetsmimask <mask>
+      Sets the SMI mask for EC host events
+  eventsetwakemask <mask>
+      Sets the wake mask for EC host events
+  extpwrlimit
+      Set the maximum external power limit
+  fanduty <percent>
+      Forces the fan PWM to a constant duty cycle
+  flasherase <offset> <size>
+      Erases EC flash
+  flasheraseasync <offset> <size>
+      Erases EC flash asynchronously
+  flashinfo
+      Prints information on the EC flash
+  flashspiinfo
+      Prints information on EC SPI flash, if present
+  flashpd <dev_id> <port> <filename>
+      Flash commands over PD
+  flashprotect [now] [enable | disable]
+      Prints or sets EC flash protection state
+  flashread <offset> <size> <outfile>
+      Reads from EC flash to a file
+  flashwrite <offset> <infile>
+      Writes to EC flash from a file
+  forcelidopen <enable>
+      Forces the lid switch to open position
+  fpcontext
+      Sets the fingerprint sensor context
+  fpencstatus
+      Prints status of Fingerprint sensor encryption engine
+  fpframe
+      Retrieve the finger image as a PGM image
+  fpinfo
+      Prints information about the Fingerprint sensor
+  fpmode [mode... [capture_type]]
+      Configure/Read the fingerprint sensor current mode
+      mode: capture|deepsleep|fingerdown|fingerup|enroll|match|
+            reset|reset_sensor|maintenance
+      capture_type: vendor|pattern0|pattern1|qual|test_reset
+  fpseed
+      Sets the value of the TPM seed.
+  fpstats
+      Prints timing statisitcs relating to capture and matching
+  fptemplate [<infile>|<index 0..2>]
+      Add a template if <infile> is provided, else dump it
+  gpioget <GPIO name>
+      Get the value of GPIO signal
+  gpioset <GPIO name>
+      Set the value of GPIO signal
+  hangdetect <flags> <event_msec> <reboot_msec> | stop | start
+      Configure or start/stop the hang detect timer
+  hello
+      Checks for basic communication with EC
+  hibdelay [sec]
+      Set the delay before going into hibernation
+  hostsleepstate
+      Report host sleep state to the EC
+  hostevent
+      Get & set host event masks.
+  i2cprotect <port> [status]
+      Protect EC's I2C bus
+  i2cread
+      Read I2C bus
+  i2cspeed <port> [speed]
+      Get or set EC's I2C bus speed
+  i2cwrite
+      Write I2C bus
+  i2cxfer <port> <peripheral_addr> <read_count> [write bytes...]
+      Perform I2C transfer on EC's I2C bus
+  infopddev <port>
+      Get info about USB type-C accessory attached to port
+  inventory
+      Return the list of supported features
+  kbfactorytest
+      Scan out keyboard if any pins are shorted
+  kbid
+      Get keyboard ID of supported keyboards
+  kbinfo
+      Dump keyboard matrix dimensions
+  kbpress
+      Simulate key press
+  keyscan <beat_us> <filename>
+      Test low-level key scanning
+  led <name> <query | auto | off | <color> | <color>=<value>...>
+      Set the color of an LED or query brightness range
+  lightbar [CMDS]
+      Various lightbar control commands
+  locatechip <type> <index>
+      Get the addresses and ports of i2c connected and embedded chips
+  mkbpget <buttons|switches>
+      Get MKBP buttons/switches supported mask and current state
+  mkbpwakemask <get|set> <event|hostevent> [mask]
+      Get or Set the MKBP event wake mask, or host event wake mask
+  motionsense [CMDS]
+      Various motion sense control commands
+  panicinfo
+      Prints saved panic info
+  pause_in_s5 [on|off]
+      Whether or not the AP should pause in S5 on shutdown
+  pchg [<port>]
+      Get peripheral charge port count and status
+  pdcontrol [suspend|resume|reset|disable|on]
+      Controls the PD chip
+  pdchipinfo <port>
+      Get PD chip information
+  pdlog
+      Prints the PD event log entries
+  pdwritelog <type> <port>
+      Writes a PD event log of the given <type>
+  pdgetmode <port>
+      Get All USB-PD alternate SVIDs and modes on <port>
+  pdsetmode <port> <svid> <opos>
+      Set USB-PD alternate SVID and mode on <port>
+  port80flood
+      Rapidly write bytes to port 80
+  port80read
+      Print history of port 80 write
+  powerinfo
+      Prints power-related information
+  protoinfo
+       Prints EC host protocol information
+  pse
+      Get and set PoE PSE port power status
+  pstoreinfo
+      Prints information on the EC host persistent storage
+  pstoreread <offset> <size> <outfile>
+      Reads from EC host persistent storage to a file
+  pstorewrite <offset> <infile>
+      Writes to EC host persistent storage from a file
+  pwmgetfanrpm [<index> | all]
+      Prints current fan RPM
+  pwmgetkblight
+      Prints current keyboard backlight percent
+  pwmgetnumfans
+      Prints the number of fans present
+  pwmgetduty
+      Prints the current 16 bit duty cycle for given PWM
+  pwmsetfanrpm <targetrpm>
+      Set target fan RPM
+  pwmsetkblight <percent>
+      Set keyboard backlight in percent
+  pwmsetduty
+      Set 16 bit duty cycle of given PWM
+  rand <num_bytes>
+      generate <num_bytes> of random numbers
+  readtest <patternoffset> <size>
+      Reads a pattern from the EC via LPC
+  reboot_ec <RO|RW|cold|hibernate|hibernate-clear-ap-off|disable-jump|cold-ap-off> [at-shutdown|switch-slot]
+      Reboot EC to RO or RW
+  reboot_ap_on_g3 [<delay>]
+      Requests that the EC will automatically reboot the AP after a
+      configurable number of seconds the next time we enter the G3
+      power state.
+  rgbkbd ...
+      Set/get RGB keyboard status, config, etc..
+  rollbackinfo
+      Print rollback block information
+  rtcget
+      Print real-time clock
+  rtcgetalarm
+      Print # of seconds before real-time clock alarm goes off.
+  rtcset <time>
+      Set real-time clock
+  rtcsetalarm <sec>
+      Set real-time clock alarm to go off in <sec> seconds
+  rwhashpd <dev_id> <HASH[0] ... <HASH[4]>
+      Set entry in PD MCU's device rw_hash table.
+  rwsig <info|dump|action|status> ...
+      info: get all info about rwsig
+      dump: show individual rwsig field
+      action: Control the behavior of RWSIG task.
+      status: Run RW signature verification and get status.
+{  rwsigaction (DEPRECATED; use "rwsig action")
+      Control the behavior of RWSIG task.
+  rwsigstatus (DEPRECATED; use "rwsig status"
+      Run RW signature verification and get status.
+  sertest
+      Serial output test for COM2
+  smartdischarge
+      Set/Get smart discharge parameters
+  stress [reboot] [help]
+      Stress test the ec host command interface.
+  sysinfo [flags|reset_flags|firmware_copy]
+      Display system info.
+  switches
+      Prints current EC switch positions
+  temps <sensorid>
+      Print temperature and temperature ratio between fan_off and
+      fan_max values, which could be a fan speed if it's controlled
+      linearly
+  tempsinfo <sensorid>
+      Print temperature sensor info.
+  thermalget <platform-specific args>
+      Get the threshold temperature values from the thermal engine.
+  thermalset <platform-specific args>
+      Set the threshold temperature values for the thermal engine.
+  tpselftest
+      Run touchpad self test.
+  tpframeget
+      Get touchpad frame data.
+  tmp006cal <tmp006_index> [params...]
+      Get/set TMP006 calibration
+  tmp006raw <tmp006_index>
+      Get raw TMP006 data
+  typeccontrol <port> <command>
+      Control USB PD policy
+  typecdiscovery <port> <type>
+      Get discovery information for port and type
+  typecstatus <port>
+      Get status information for port
+  uptimeinfo
+      Get info about how long the EC has been running and the most
+      recent AP resets
+  usbchargemode <port> <mode> [<inhibit_charge>]
+      Set USB charging mode
+  usbmux <mux>
+      Set USB mux switch state
+  usbpd <port> <auto | [toggle|toggle-off|sink|source] [none|usb|dp|dock] [dr_swap|pr_swap|vconn_swap]>
+      Control USB PD/type-C [deprecated]
+  usbpddps [enable | disable]
+      Enable or disable dynamic pdo selection
+  usbpdmuxinfo [tsv]
+      Get USB-C SS mux info.
+          tsv: Output as tab separated values. Columns are defined as:
+               Port, USB enabled, DP enabled, Polarity, HPD IRQ, HPD LVL
+  usbpdpower [port]
+      Get USB PD power information
+  version
+      Prints EC version
+  waitevent <type> [<timeout>]
+      Wait for the MKBP event of type and display it
+  wireless <flags> [<mask> [<suspend_flags> <suspend_mask>]]
+      Enable/disable WLAN/Bluetooth radio
+

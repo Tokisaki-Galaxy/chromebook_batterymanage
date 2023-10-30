@@ -18,20 +18,28 @@ int battery_monitor() {
     return percent;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
     wchar_t buffer[MAX_PATH];
     GetModuleFileName(NULL, buffer, MAX_PATH);
     std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
     std::wstring path = std::wstring(buffer).substr(0, pos);
     auto pEc = path+L"\\ectool.exe";
+    int blimit = 80;    //默认到80停止充电
+
+    if (argc>1)
+        blimit = atoi(argv[1]);
+
+    ShellExecute(NULL, L"open", pEc.c_str(), L"fanduty 100", NULL, SW_HIDE);
+    std::this_thread::sleep_for(seconds(20));
+    ShellExecute(NULL, L"open", pEc.c_str(), L"autofanctrl", NULL, SW_HIDE);
 
     while (true) {
         auto start = high_resolution_clock::now();
 
         // 执行任务
-        if (battery_monitor() >= 80)
-            ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol idle", NULL, SW_HIDE);
+        if (battery_monitor() >= blimit)
+            ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol discharge", NULL, SW_HIDE);
         else
             ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol normal", NULL, SW_HIDE);
         std::wcout<<pEc.c_str();
