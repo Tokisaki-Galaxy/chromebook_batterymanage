@@ -9,10 +9,9 @@
 using namespace std::chrono;
 
 int battery_monitor() {
-    LPSYSTEM_POWER_STATUS power = new _SYSTEM_POWER_STATUS();
-    int ret = GetSystemPowerStatus(power);
+    std::unique_ptr<_SYSTEM_POWER_STATUS> power(new _SYSTEM_POWER_STATUS());
+    int ret = GetSystemPowerStatus(power.get());
     int percent = (int)power->BatteryLifePercent;
-    delete power;
     if (ret == 0) //表示获取失败
         return 0;
     return percent;
@@ -27,6 +26,12 @@ int main(int argc, char* argv[])
     auto pEc = path+L"\\ectool.exe";
     int blimit = 80;    //默认到80停止充电
 
+    // 执行不成功
+    if (ShellExecute(NULL, L"open", pEc.c_str(), L"hello", NULL, SW_HIDE) != 0) {
+        MessageBox(0, L"与BIOS通信失败,即将退出\n似乎您不是coreboot(chromebook)", L"出现错误", MB_OK | MB_ICONHAND);
+        exit(1);
+    }
+
     if (argc>1)
         blimit = atoi(argv[1]);
 
@@ -39,7 +44,7 @@ int main(int argc, char* argv[])
 
         // 执行任务
         if (battery_monitor() >= blimit)
-            ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol discharge", NULL, SW_HIDE);
+            ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol idle", NULL, SW_HIDE);
         else
             ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol normal", NULL, SW_HIDE);
         std::wcout<<pEc.c_str();
