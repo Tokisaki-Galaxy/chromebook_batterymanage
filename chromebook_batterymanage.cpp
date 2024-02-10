@@ -27,10 +27,10 @@ int main(int argc, char* argv[])
     int blimit = 80;    //默认到80停止充电
 
     // 执行不成功
-    //if (ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol normal", NULL, SW_HIDE) == 0) {
-    //    MessageBox(0, L"与BIOS通信失败,即将退出\n似乎您不是coreboot(chromebook)", L"出现错误", MB_OK | MB_ICONHAND);
-    //    exit(1);
-    //}
+    if ((INT_PTR)ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol normal", NULL, SW_HIDE) < 32) {
+        MessageBox(0, L"与BIOS通信失败,即将退出\n似乎您不是coreboot(chromebook)", L"出现错误", MB_OK | MB_ICONHAND);
+        exit(1);
+    }
 
     if (argc>1)
         blimit = atoi(argv[1]);
