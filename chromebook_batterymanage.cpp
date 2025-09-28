@@ -107,20 +107,25 @@ int GetBatteryPercent() {
 
 int main(int argc, char* argv[]) {
     if (argc > 1 && (strcmp(argv[1], "/?") == 0 || strcmp(argv[1], "/h") == 0 || strcmp(argv[1], "--help") == 0)) {
-        MessageBox(NULL, L"用法: program.exe [电量阈值]\n例如: program.exe 75\n如果未提供阈值，则默认为 80%。", L"帮助", MB_OK | MB_ICONINFORMATION);
+        MessageBox(NULL,
+            L"Usage: program.exe [battery_limit_percent]\n\n"
+            L"Example: program.exe 75\n\n"
+            L"If no limit is provided, the default value of 80% will be used.",
+            L"Help",
+            MB_OK | MB_ICONINFORMATION);
         return 0;
     }
 
     hMutex = CreateMutexW(NULL, TRUE, mutexName);
     if (hMutex == NULL) {
         // 创建互斥体失败，这通常是严重的系统问题
-        MessageBox(NULL, L"无法创建互斥体，程序无法启动。", L"致命错误", MB_OK | MB_ICONERROR);
+        MessageBox(NULL, L"Failed to create a mutex. The application cannot start.", L"Fatal Error", MB_OK | MB_ICONERROR);
         return 1;
     }
 
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
         // 互斥体已存在，说明程序已在运行
-        MessageBox(NULL, L"程序已经在运行中。", L"提示", MB_OK | MB_ICONINFORMATION);
+        MessageBox(NULL, L"The application is already running.", L"Information", MB_OK | MB_ICONINFORMATION);
         // 关闭我们刚刚获取的句柄并退出
         CloseHandle(hMutex);
         return 0; // 正常退出，因为这不是一个错误
@@ -129,7 +134,7 @@ int main(int argc, char* argv[]) {
     // 获取 ectool.exe 的路径
     std::wstring exeDir = GetExecutableDirectory();
     if (exeDir.empty()) {
-        MessageBox(NULL, L"无法获取当前程序路径！", L"致命错误", MB_OK | MB_ICONERROR);
+        MessageBox(NULL, L"Failed to get the application's path!", L"Fatal Error", MB_OK | MB_ICONERROR);
         CloseHandle(hMutex);
         return 1;
     }
@@ -145,16 +150,21 @@ int main(int argc, char* argv[]) {
             }
         }
         catch (const std::invalid_argument&) {
-            MessageBox(NULL, L"电池保持阈值参数不是数字，忽略并使用默认值80%", L"提示", MB_OK | MB_ICONERROR);
+            MessageBox(NULL, L"The provided battery limit is not a valid number. Using the default value of 80%.", L"Invalid Parameter", MB_OK | MB_ICONWARNING);
         }
         catch (const std::out_of_range&) {
-            MessageBox(NULL, L"电池保持阈值参数错误，忽略并使用默认值80%", L"提示", MB_OK | MB_ICONERROR);
+            MessageBox(NULL, L"The provided battery limit is out of the valid range (1-100). Using the default value of 80%.", L"Invalid Parameter", MB_OK | MB_ICONWARNING);
         }
     }
 
     // 启动时检查与EC的通信是否正常
     if (ExecuteEcTool(ectoolPath, CMD_CHARGE_NORMAL) != 0) {
-        MessageBox(NULL, L"与BIOS(EC)通信失败, 即将退出。\n请确认您的设备是 Coreboot/Chromebook 并且 ectool.exe 文件正常。", L"出现错误", MB_OK | MB_ICONHAND);
+        MessageBox(NULL,
+            L"Failed to communicate with the Embedded Controller (EC).\n"
+            L"The application will now exit.\n\n"
+            L"Please ensure your device is a Coreboot-based machine (like a Chromebook) and that ectool.exe is located in the same directory.",
+            L"Error",
+            MB_OK | MB_ICONHAND);
         CloseHandle(hMutex);
         return 1;
     }
