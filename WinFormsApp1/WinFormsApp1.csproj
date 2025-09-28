@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishSingleFile>true</PublishSingleFile>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\ectool\ectool.exe" />
+    <EmbeddedResource Include="..\x64\Release\chromebook_batterymanage.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\chromebook_batterymanage.vcxproj" />
+  </ItemGroup>
+
+</Project>
