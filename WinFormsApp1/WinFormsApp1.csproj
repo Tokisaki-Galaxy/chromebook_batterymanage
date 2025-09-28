@@ -8,6 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <PublishReadyToRun>true</PublishReadyToRun>
     <PublishSingleFile>true</PublishSingleFile>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
 
 

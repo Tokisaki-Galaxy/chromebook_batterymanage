@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             installButton = new Button();
             label2 = new Label();
             runTempButton = new Button();
@@ -37,58 +38,39 @@
             // 
             // installButton
             // 
-            installButton.Location = new Point(104, 12);
+            resources.ApplyResources(installButton, "installButton");
             installButton.Name = "installButton";
-            installButton.Size = new Size(139, 29);
-            installButton.TabIndex = 0;
-            installButton.Text = "button1";
             installButton.UseVisualStyleBackColor = true;
             installButton.Click += button1_Click;
             // 
             // label2
             // 
-            label2.AutoSize = true;
-            label2.Location = new Point(9, 16);
+            resources.ApplyResources(label2, "label2");
             label2.Name = "label2";
-            label2.Size = new Size(98, 20);
-            label2.TabIndex = 2;
-            label2.Text = "Install status";
             // 
             // runTempButton
             // 
-            runTempButton.Location = new Point(104, 55);
+            resources.ApplyResources(runTempButton, "runTempButton");
             runTempButton.Name = "runTempButton";
-            runTempButton.Size = new Size(139, 29);
-            runTempButton.TabIndex = 3;
-            runTempButton.Text = "button2";
             runTempButton.UseVisualStyleBackColor = true;
             runTempButton.Click += button2_Click;
             // 
             // label3
             // 
-            label3.AutoSize = true;
-            label3.Location = new Point(9, 59);
+            resources.ApplyResources(label3, "label3");
             label3.Name = "label3";
-            label3.Size = new Size(84, 20);
-            label3.TabIndex = 4;
-            label3.Text = "Run status";
             // 
             // linkLabel1
             // 
-            linkLabel1.AutoSize = true;
-            linkLabel1.Location = new Point(104, 91);
+            resources.ApplyResources(linkLabel1, "linkLabel1");
             linkLabel1.Name = "linkLabel1";
-            linkLabel1.Size = new Size(105, 20);
-            linkLabel1.TabIndex = 5;
             linkLabel1.TabStop = true;
-            linkLabel1.Text = "Github Pages";
             linkLabel1.LinkClicked += linkLabel1_LinkClicked;
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(9F, 20F);
+            resources.ApplyResources(this, "$this");
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(255, 120);
             Controls.Add(linkLabel1);
             Controls.Add(label3);
             Controls.Add(runTempButton);
@@ -96,7 +78,6 @@
             Controls.Add(installButton);
             MaximizeBox = false;
             Name = "Form1";
-            Text = "ChromeBook BatteryManage GUI";
             ResumeLayout(false);
             PerformLayout();
         }

@@ -120,7 +120,7 @@ namespace WinFormsApp1
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"无法打开链接: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Unable to open link: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         #endregion
@@ -134,11 +134,11 @@ namespace WinFormsApp1
                 ExtractResources();
                 SetAutoStart(true);
                 StartService();
-                MessageBox.Show("服务已成功安装并启动！", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("The service was successfully installed and started！", "congratulation", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"安装失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Installation failed {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 // 清理可能不完整的安装
                 UninstallService();
             }
@@ -154,11 +154,11 @@ namespace WinFormsApp1
                     SetAutoStart(true);
                 }
                 StartService();
-                MessageBox.Show("服务已成功启动！", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("The service was successfully started！", "congratulation", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Start failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -177,11 +177,11 @@ namespace WinFormsApp1
                 {
                     Directory.Delete(InstallDir, true);
                 }
-                MessageBox.Show("服务已成功卸载。", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Service successfully uninstalled.", "success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"卸载失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Uninstall failed: {ex.Message}", "error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -189,12 +189,12 @@ namespace WinFormsApp1
         {
             if (Process.GetProcessesByName(ProcessName).Any())
             {
-                MessageBox.Show("服务已经在运行中。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("The service is already running.", "info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
             if (!File.Exists(_fullAppPath))
             {
-                MessageBox.Show($"找不到应用程序: {_fullAppPath}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Application not found: {_fullAppPath}", "error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -240,7 +240,7 @@ namespace WinFormsApp1
             // 提取主程序
             using (Stream resourceStream = assembly.GetManifestResourceStream(appResourceName))
             {
-                if (resourceStream == null) throw new Exception($"找不到嵌入的资源: {appResourceName}");
+                if (resourceStream == null) throw new Exception($"The embedded resource could not be found: {appResourceName}");
                 using (FileStream fileStream = new FileStream(_fullAppPath, FileMode.Create))
                 {
                     resourceStream.CopyTo(fileStream);
@@ -250,7 +250,7 @@ namespace WinFormsApp1
             // 提取 ectool.exe
             using (Stream resourceStream = assembly.GetManifestResourceStream(toolResourceName))
             {
-                if (resourceStream == null) throw new Exception($"找不到嵌入的资源: {toolResourceName}");
+                if (resourceStream == null) throw new Exception($"The embedded resource could not be found: {toolResourceName}");
                 using (FileStream fileStream = new FileStream(Path.Combine(InstallDir, ToolName), FileMode.Create))
                 {
                     resourceStream.CopyTo(fileStream);
