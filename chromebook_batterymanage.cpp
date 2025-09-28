@@ -2,66 +2,209 @@
 //
 
 #include <iostream>
-#include <Windows.h>
+#include <string>
+#include <vector>
 #include <chrono>
-#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")//运行时不显示窗口
+#include <thread>
+#include <Windows.h>
+#include <Shlwapi.h>
+#include <stdexcept>
 
-using namespace std::chrono;
+#ifndef _DEBUG
+#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
+#endif
 
-int battery_monitor() {
-    std::unique_ptr<_SYSTEM_POWER_STATUS> power(new _SYSTEM_POWER_STATUS());
-    int ret = GetSystemPowerStatus(power.get());
-    int percent = (int)power->BatteryLifePercent;
-    if (ret == 0) //表示获取失败
-        return 0;
-    return percent;
+#pragma comment(lib, "Shlwapi.lib")
+using namespace std::chrono_literals;
+HANDLE hMutex = NULL;
+const wchar_t* mutexName = L"Global\\ChromebookBatteryManagerAppMutex_UniqueName{E2A27A6E-7E3B-4C9C-A2E1-765A9B8706B9}";
+
+const wchar_t* CMD_CHARGE_NORMAL = L"chargecontrol normal";
+const wchar_t* CMD_CHARGE_IDLE = L"chargecontrol idle";
+const wchar_t* CMD_FAN_MAX = L"fanduty 100";
+const wchar_t* CMD_FAN_AUTO = L"autofanctrl";
+
+/**
+ * @brief 获取当前可执行文件的目录路径
+ * @return 包含目录的 wstring，如果失败则为空字符串
+ */
+std::wstring GetExecutableDirectory() {
+    wchar_t path[MAX_PATH] = { 0 };
+    if (GetModuleFileName(NULL, path, MAX_PATH) == 0) {
+        return L"";
+    }
+    PathRemoveFileSpec(path);
+    return std::wstring(path);
 }
 
-int main(int argc, char* argv[])
-{
-    wchar_t buffer[MAX_PATH];
-    GetModuleFileName(NULL, buffer, MAX_PATH);
-    std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
-    std::wstring path = std::wstring(buffer).substr(0, pos);
-    auto pEc = path+L"\\ectool.exe";
-    int blimit = 80;    //默认到80停止充电
+/**
+ * @brief 执行 ectool.exe 并返回其退出码
+ * @param ectoolPath ectool.exe 的完整路径
+ * @param args 要传递给 ectool.exe 的参数
+ * @return 进程的退出码。如果进程创建失败，则返回 -1 (DWORD(-1))
+ */
+DWORD ExecuteEcTool(const std::wstring& ectoolPath, const std::wstring& args) {
+    // 将路径和参数组合成完整的命令行，并为路径添加引号以处理空格
+    std::wstring commandLine = L"\"" + ectoolPath + L"\" " + args;
 
-    // 执行不成功
-    if ((INT_PTR)ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol normal", NULL, SW_HIDE) < 32) {
-        MessageBox(0, L"与BIOS通信失败,即将退出\n似乎您不是coreboot(chromebook)", L"出现错误", MB_OK | MB_ICONHAND);
-        exit(1);
+    // CreateProcessW 的 lpCommandLine 参数需要一个可写的缓冲区
+    std::vector<wchar_t> commandLineVec(commandLine.begin(), commandLine.end());
+    commandLineVec.push_back(0); // 添加 null 终止符
+
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+
+    // 创建进程，不显示窗口
+    BOOL success = CreateProcessW(
+        NULL,
+        commandLineVec.data(),
+        NULL, NULL, FALSE, CREATE_NO_WINDOW,
+        NULL, NULL, &si, &pi
+    );
+
+    if (!success) {
+        std::wcerr << L"CreateProcess failed for command: " << commandLine << L" Error: " << GetLastError() << std::endl;
+        return -1; // 返回一个特殊值表示进程创建失败
     }
 
-    if (argc>1)
-        blimit = atoi(argv[1]);
+    // 等待进程执行完成
+    WaitForSingleObject(pi.hProcess, INFINITE);
 
-    ShellExecute(NULL, L"open", pEc.c_str(), L"fanduty 100", NULL, SW_HIDE);
-    std::this_thread::sleep_for(seconds(20));
-    ShellExecute(NULL, L"open", pEc.c_str(), L"autofanctrl", NULL, SW_HIDE);
+    // 获取进程的退出码
+    DWORD exitCode = -1; // 默认为失败
+    GetExitCodeProcess(pi.hProcess, &exitCode);
+
+    // 清理句柄
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    std::wcout << L"Command '" << commandLine << L"' finished with exit code: " << exitCode << std::endl;
+
+    return exitCode;
+}
+
+/**
+ * @brief 获取系统电池电量百分比
+ * @return 电量百分比 (0-100)。如果失败或没有电池，则返回 -1。
+ */
+int GetBatteryPercent() {
+    SYSTEM_POWER_STATUS powerStatus;
+    if (GetSystemPowerStatus(&powerStatus) == 0) {
+        return -1; // API 调用失败
+    }
+
+    // BatteryFlag 为 128 表示没有系统电池
+    // BatteryLifePercent 为 255 表示未知状态
+    if (powerStatus.BatteryFlag == 128 || powerStatus.BatteryLifePercent > 100) {
+        return -1; // 没有电池或状态未知
+    }
+
+    return static_cast<int>(powerStatus.BatteryLifePercent);
+}
+
+int main(int argc, char* argv[]) {
+    if (argc > 1 && (strcmp(argv[1], "/?") == 0 || strcmp(argv[1], "/h") == 0 || strcmp(argv[1], "--help") == 0)) {
+        MessageBox(NULL, L"用法: program.exe [电量阈值]\n例如: program.exe 75\n如果未提供阈值，则默认为 80%。", L"帮助", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
+
+    hMutex = CreateMutexW(NULL, TRUE, mutexName);
+    if (hMutex == NULL) {
+        // 创建互斥体失败，这通常是严重的系统问题
+        MessageBox(NULL, L"无法创建互斥体，程序无法启动。", L"致命错误", MB_OK | MB_ICONERROR);
+        return 1;
+    }
+
+    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        // 互斥体已存在，说明程序已在运行
+        MessageBox(NULL, L"程序已经在运行中。", L"提示", MB_OK | MB_ICONINFORMATION);
+        // 关闭我们刚刚获取的句柄并退出
+        CloseHandle(hMutex);
+        return 0; // 正常退出，因为这不是一个错误
+    }
+
+    // 获取 ectool.exe 的路径
+    std::wstring exeDir = GetExecutableDirectory();
+    if (exeDir.empty()) {
+        MessageBox(NULL, L"无法获取当前程序路径！", L"致命错误", MB_OK | MB_ICONERROR);
+        CloseHandle(hMutex);
+        return 1;
+    }
+    const std::wstring ectoolPath = exeDir + L"\\ectool.exe";
+
+    // 解析命令行参数以设置电量阈值
+    int batteryLimit = 80; // 默认阈值
+    if (argc > 1) {
+        try {
+            int parsedValue = std::stoi(argv[1]);
+            if (parsedValue > 0 && parsedValue <= 100) {
+                batteryLimit = parsedValue;
+            }
+        }
+        catch (const std::invalid_argument&) {
+            MessageBox(NULL, L"电池保持阈值参数不是数字，忽略并使用默认值80%", L"提示", MB_OK | MB_ICONERROR);
+        }
+        catch (const std::out_of_range&) {
+            MessageBox(NULL, L"电池保持阈值参数错误，忽略并使用默认值80%", L"提示", MB_OK | MB_ICONERROR);
+        }
+    }
+
+    // 启动时检查与EC的通信是否正常
+    if (ExecuteEcTool(ectoolPath, CMD_CHARGE_NORMAL) != 0) {
+        MessageBox(NULL, L"与BIOS(EC)通信失败, 即将退出。\n请确认您的设备是 Coreboot/Chromebook 并且 ectool.exe 文件正常。", L"出现错误", MB_OK | MB_ICONHAND);
+        CloseHandle(hMutex);
+        return 1;
+    }
+
+    // 启动时执行一次风扇控制序列
+    ExecuteEcTool(ectoolPath, CMD_FAN_MAX);
+    std::this_thread::sleep_for(10s);
+    ExecuteEcTool(ectoolPath, CMD_FAN_AUTO);
+
+    enum class ChargeState { UNKNOWN, NORMAL, IDLE };
+    ChargeState currentState = ChargeState::UNKNOWN;
+	int continuetime = 0;
 
     while (true) {
-        auto start = high_resolution_clock::now();
+        int percent = GetBatteryPercent();
 
-        // 执行任务
-        if (battery_monitor() >= blimit)
-            ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol idle", NULL, SW_HIDE);
-        else
-            ShellExecute(NULL, L"open", pEc.c_str(), L"chargecontrol normal", NULL, SW_HIDE);
-        std::wcout<<pEc.c_str();
-        std::cout << battery_monitor() << std::endl;
+        if (percent != -1) {
+            if (percent >= batteryLimit) {
+                // 电量高于或等于阈值
+                if (currentState != ChargeState::IDLE) {
+                    if (ExecuteEcTool(ectoolPath, CMD_CHARGE_IDLE) == 0) {
+                        currentState = ChargeState::IDLE;
+                        continuetime = 0; // 状态改变，重置计数器
+                    }
+                }
+            }
+            else {
+                // 电量低于阈值
+                if (currentState != ChargeState::NORMAL) {
+                    // 情况1: 状态需要从 IDLE/UNKNOWN 切换到 NORMAL，立即执行
+                    if (ExecuteEcTool(ectoolPath, CMD_CHARGE_NORMAL) == 0) {
+                        currentState = ChargeState::NORMAL;
+                        continuetime = 0; // 状态改变，重置计数器
+                    }
+                }
+                else {
+                    // 情况2: 状态已经是 NORMAL，进行周期性再确认
+                    continuetime++;
+                    if (continuetime >= 5) { // 每 5 个周期 (大约10分钟)
+                        std::wcout << L"Periodic re-sync: forcing NORMAL charge mode." << std::endl;
+                        ExecuteEcTool(ectoolPath, CMD_CHARGE_NORMAL); // 强制再发一次命令
+                        continuetime = 0; // 重置计数器
+                    }
+                }
+            }
+        }
 
-        std::this_thread::sleep_for(minutes(3));
+        std::this_thread::sleep_for(2min);
     }
+
+    CloseHandle(hMutex);
     return 0;
 }
-
-// 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
-// 调试程序: F5 或调试 >“开始调试”菜单
-
-// 入门使用技巧: 
-//   1. 使用解决方案资源管理器窗口添加/管理文件
-//   2. 使用团队资源管理器窗口连接到源代码管理
-//   3. 使用输出窗口查看生成输出和其他消息
-//   4. 使用错误列表窗口查看错误
-//   5. 转到“项目”>“添加新项”以创建新的代码文件，或转到“项目”>“添加现有项”以将现有代码文件添加到项目
-//   6. 将来，若要再次打开此项目，请转到“文件”>“打开”>“项目”并选择 .sln 文件
