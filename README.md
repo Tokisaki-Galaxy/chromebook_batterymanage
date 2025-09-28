@@ -1,26 +1,47 @@
 # chromebook_batterymanage
-适用于chromebook的电池阈值，充电到一定程度停止充电
 
-核心用于调整电池充电状态的`ectool.exe`是coreboot项目组的，本程序只是套了个壳方便使用。
+A battery charge threshold tool for Chromebooks (running Windows). It stops charging once a set limit is reached to prolong battery life.
 
-https://github.com/Tokisaki-Galaxy/chromebook_batterymanage
+The core utility, `ectool.exe`, which handles the battery charging state, is a part of the **coreboot project**. This program simply provides a convenient wrapper and automation service for it.
 
-需要extool.exe和主程序在同一目录下。
+**Requirement:** Both `ectool.exe` and the main application (`chromebook_batterymanage.exe`) must be in the same directory to function correctly.
 
-## 教程
+## How to Use
 
-### 手动启动
+### GUI (Recommended)
 
-确保两个文件放在同一目录，点击`chromebook_batterymanage.exe`。
+<img width="273" height="166" alt="image" src="https://github.com/user-attachments/assets/bbc123cf-aaab-40d2-8862-de82129e4941" />
 
-### 自动启动
+The GUI provides a user-friendly way to manage the `chromebook_batterymanage` service. It allows you to:
+*   Install and uninstall the service.
+*   Start and stop the service.
+*   Run the service temporarily without installation.
+*   Open the project's GitHub page.
 
-确保两个文件放在同一目录，然后在"任务计划程序"里面创建计划，开机启动，执行`chromebook_batterymanage.exe`
+The default installation path is `C:\batteryManage`.
 
-预期情况，每隔3分钟检测一次电池电量，若大于等于80%(默认设置)，则停止向电池供电。不探测的时候后台休眠，占用极低。
+### Manual Mode (Not recommended)
 
-### 自定义电池充电阈值
+#### Manual Start
 
-命令行选项（可选）
+Ensure both `chromebook_batterymanage.exe` and `ectool.exe` are in the same directory, then run `chromebook_batterymanage.exe`.
 
-在添加任务计划程序里面，`chromebook_batterymanage.exe 60`可以设置阈值为60%，以此类推。不设置默认80%。
+#### Automatic Start (via Task Scheduler)
+
+1.  Place both files in a permanent directory.
+2.  Open **Task Scheduler** in Windows.
+3.  Create a new task that triggers at user logon.
+4.  Set the action to start a program and point it to `chromebook_batterymanage.exe`.
+
+The application checks the battery level every 2 minutes. If the charge is greater than or equal to the threshold (80% by default), it commands the embedded controller to stop charging (idle mode). The program is very lightweight and consumes minimal system resources while idle.
+
+## Customizing the Charge Threshold
+
+You can set a custom charge threshold by passing it as a command-line argument.
+
+For example, to set the limit to 60%, you would run the program like this:
+`chromebook_batterymanage.exe 60`
+
+This is particularly useful when setting up the task in Task Scheduler; you can add the argument in the "Add arguments (optional)" field.
+
+If no argument is provided, the default threshold of **80%** will be used.
