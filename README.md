@@ -1,5 +1,12 @@
 # chromebook_batterymanage
 
+<img src="https://img.shields.io/badge/Tech-C%23%20%7C%20WinForms-512BD4?logo=.net" alt="Tech: C# | WinForms">
+<img src="https://img.shields.io/badge/Tech-C++%20%7C%20Program-512BD4?logo=.net" alt="Tech: C++ | Program">
+
+<a href="https://apps.microsoft.com/store/detail/9NMPGW6B80BK">
+    <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get it from Microsoft Store" width="160"/>
+</a>
+
 A battery charge threshold tool for Chromebooks (running Windows). It stops charging once a set limit is reached to prolong battery life.
 
 The core utility, `ectool.exe`, which handles the battery charging state, is a part of the **coreboot project**. This program simply provides a convenient wrapper and automation service for it.
